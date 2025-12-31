@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}Student Dashboard - Talentio LMS{% endblock %}
+
+{% block content %}
+<div class="min-h-screen student-gradient py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold text-white mb-2">
+                <i class="fas fa-user-graduate mr-2"></i> Student Dashboard
+            </h1>
+            <p class="text-white">Welcome, {{ email }}</p>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-xl p-6 mb-6">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="text-2xl font-bold text-gray-800">
+                    <i class="fas fa-clipboard-list mr-2"></i> Available Tests
+                </h2>
+                <button onclick="refreshTests()" class="transition hover:opacity-70" style="color: #1F497D;">
+                    <i class="fas fa-sync-alt mr-1"></i> Refresh
+                </button>
+            </div>
+
+            {% if tests %}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" id="tests-container">
+                {% for test in tests %}
+                <div class="bg-gradient-to-br from-white to-gray-50 rounded-xl p-6 shadow-lg hover:shadow-xl transition transform hover:-translate-y-1" style="border: 2px solid {{ '#1F497D' if test.status == 'available' else '#eab308' if test.status == 'upcoming' else '#d1d5db' }};">
+                    <div class="flex items-start justify-between mb-4">
+                        <h3 class="text-xl font-semibold text-gray-800">{{ test.test_name }}</h3>
+                        <span class="px-3 py-1 rounded-full text-xs font-semibold text-white" style="background-color: {{ '#1F497D' if test.status == 'available' else '#eab308' if test.status == 'upcoming' else '#6b7280' }};">
+                            {% if test.status == 'available' %}
+                                <i class="fas fa-circle mr-1 animate-pulse"></i> Live
+                            {% elif test.status == 'upcoming' %}
+                                <i class="far fa-clock mr-1"></i> Upcoming
+                            {% else %}
+                                <i class="fas fa-check mr-1"></i> Ended
+                            {% endif %}
+                        </span>
+                    </div>
+
+                    <div class="space-y-2 text-sm text-gray-600 mb-4">
+                        <div class="flex items-center">
+                            <i class="fas fa-calendar-start w-5 mr-2" style="color: #1F497D;"></i>
+                            <span class="font-medium">Start:</span>
+                            <span class="ml-2">{{ test.start_time | format_datetime }}</span>
+                        </div>
+                        <div class="flex items-center">
+                            <i class="fas fa-calendar-times w-5 mr-2 text-red-600"></i>
+                            <span class="font-medium">End:</span>
+                            <span class="ml-2">{{ test.end_time | format_datetime }}</span>
+                        </div>
+                    </div>
+
+                    {% if test.status == 'available' %}
+                    <div class="mb-4">
+                        <div class="countdown rounded-lg p-3 text-center" 
+                             style="background-color: rgba(31, 73, 125, 0.1); border: 1px solid rgba(31, 73, 125, 0.2);"
+                             data-end-time="{{ test.end_time }}">
+                            <i class="fas fa-hourglass-half mr-1" style="color: #1F497D;"></i>
+                            <span class="font-semibold" style="color: #1F497D;">Calculating...</span>
+                        </div>
+                    </div>
+                    <a href="{{ test.test_link }}" 
+                       target="_blank"
+                       class="block w-full text-white font-semibold py-3 rounded-lg text-center transition transform hover:scale-105 shadow hover:opacity-90" style="background-color: #1F497D;">
+                        <i class="fas fa-external-link-alt mr-2"></i> Take Test
+                    </a>
+                    {% elif test.status == 'upcoming' %}
+                    <div class="countdown bg-yellow-50 border border-yellow-200 rounded-lg p-3 text-center mb-4" 
+                         data-start-time="{{ test.start_time }}">
+                        <i class="far fa-clock mr-1 text-yellow-600"></i>
+                        <span class="font-semibold text-yellow-700">Starts in: Calculating...</span>
+                    </div>
+                    <button disabled
+                            class="block w-full bg-gray-300 text-gray-500 font-semibold py-3 rounded-lg text-center cursor-not-allowed">
+                        <i class="fas fa-lock mr-2"></i> Not Available Yet
+                    </button>
+                    {% else %}
+                    <button disabled
+                            class="block w-full bg-gray-300 text-gray-500 font-semibold py-3 rounded-lg text-center cursor-not-allowed">
+                        <i class="fas fa-times-circle mr-2"></i> Test Ended
+                    </button>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-16">
+                <i class="fas fa-inbox text-6xl text-gray-300 mb-4"></i>
+                <p class="text-gray-500 text-lg">No tests available at the moment</p>
+                <p class="text-gray-400 text-sm mt-2">Check back later for new assignments</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    updateAllCountdowns();
+    setInterval(updateAllCountdowns, 30000);
+    setInterval(checkTestStatusChanges, 60000);
+});
+
+function updateAllCountdowns() {
+    document.querySelectorAll('.countdown').forEach(countdown => {
+        const endTime = countdown.dataset.endTime;
+        const startTime = countdown.dataset.startTime;
+        
+        if (endTime) {
+            const remaining = calculateTimeRemaining(endTime);
+            if (remaining) {
+                countdown.innerHTML = `<i class="fas fa-hourglass-half mr-1" style="color: #1F497D;"></i><span class="font-semibold" style="color: #1F497D;">${remaining}</span>`;
+            }
+        } else if (startTime) {
+            const remaining = calculateTimeRemaining(startTime);
+            if (remaining) {
+                countdown.innerHTML = `<i class="far fa-clock mr-1 text-yellow-600"></i><span class="font-semibold text-yellow-700">Starts in: ${remaining}</span>`;
+            }
+        }
+    });
+}
+
+function checkTestStatusChanges() {
+    location.reload();
+}
+
+function refreshTests() {
+    location.reload();
+}
+</script>
+{% endblock %}

@@ -1,0 +1,349 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Dashboard - Talentio LMS{% endblock %}
+
+{% block content %}
+<div class="min-h-screen admin-gradient py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="mb-8">
+            <h1 class="text-4xl font-bold text-white mb-2">
+                <i class="fas fa-user-shield mr-2"></i> Admin Dashboard
+            </h1>
+            <p class="text-white">Manage students, tests, and system settings</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-600 text-sm">Total Students</p>
+                        <p class="text-3xl font-bold" style="color: #1F497D;">{{ total_students }}</p>
+                    </div>
+                    <div class="p-4 rounded-full" style="background-color: rgba(31, 73, 125, 0.1);">
+                        <i class="fas fa-users text-3xl" style="color: #1F497D;"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-600 text-sm">Total Tests</p>
+                        <p class="text-3xl font-bold" style="color: #1F497D;">{{ total_tests }}</p>
+                    </div>
+                    <div class="p-4 rounded-full" style="background-color: rgba(31, 73, 125, 0.1);">
+                        <i class="fas fa-clipboard-list text-3xl" style="color: #1F497D;"></i>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-lg p-6">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-gray-600 text-sm">Active Tests</p>
+                        <p class="text-3xl font-bold" style="color: #1F497D;">{{ active_tests }}</p>
+                    </div>
+                    <div class="p-4 rounded-full" style="background-color: rgba(31, 73, 125, 0.1);">
+                        <i class="fas fa-check-circle text-3xl" style="color: #1F497D;"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <div class="bg-white rounded-xl shadow-xl p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                    <i class="fas fa-envelope mr-2" style="color: #1F497D;"></i> Manage Student Emails
+                </h2>
+
+                <div class="mb-6">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-3">Add Single Email</h3>
+                    <form method="POST" action="{{ url_for('add_email') }}" class="flex gap-2">
+                        <input type="email" 
+                               name="email" 
+                               placeholder="student@example.com"
+                               required
+                               class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2" style="--tw-ring-color: #1F497D;">
+                        <button type="submit" 
+                                class="text-white px-6 py-2 rounded-lg transition hover:opacity-90" style="background-color: #1F497D;">
+                            <i class="fas fa-plus mr-1"></i> Add
+                        </button>
+                    </form>
+                </div>
+
+                <div class="mb-6 pt-6 border-t">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-3">Bulk Upload (CSV)</h3>
+                    <form method="POST" action="{{ url_for('upload_csv') }}" enctype="multipart/form-data">
+                        <div class="flex gap-2">
+                            <input type="file" 
+                                   name="csv_file" 
+                                   accept=".csv"
+                                   required
+                                   class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:ring-2" style="--tw-ring-color: #1F497D;">
+                            <button type="submit" 
+                                    class="text-white px-6 py-2 rounded-lg transition hover:opacity-90" style="background-color: #1F497D;">
+                                <i class="fas fa-upload mr-1"></i> Upload
+                            </button>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-2">
+                            <i class="fas fa-info-circle mr-1"></i> CSV format: Single column with "email" header or no header
+                        </p>
+                    </form>
+                </div>
+
+                <div class="pt-6 border-t">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-3">
+                        Email List ({{ total_students }})
+                    </h3>
+                    <div class="max-h-96 overflow-y-auto border border-gray-200 rounded-lg">
+                        {% if emails %}
+                        <table class="w-full">
+                            <tbody class="divide-y divide-gray-200">
+                                {% for email in emails %}
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-4 py-3 text-sm text-gray-700">
+                                        <i class="fas fa-envelope mr-2 text-gray-400"></i>
+                                        {{ email.email }}
+                                    </td>
+                                    <td class="px-4 py-3 text-right">
+                                        <form method="POST" action="{{ url_for('delete_email', id=email.id) }}" 
+                                              onsubmit="return confirm('Delete this email?')" 
+                                              class="inline">
+                                            <button type="submit" 
+                                                    class="text-red-500 hover:text-red-700 transition">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% else %}
+                        <div class="p-8 text-center text-gray-500">
+                            <i class="fas fa-inbox text-4xl mb-2"></i>
+                            <p>No students added yet</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-xl p-6">
+                <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                    <i class="fas fa-tasks mr-2" style="color: #1F497D;"></i> Manage Tests
+                </h2>
+
+                <form method="POST" action="{{ url_for('create_test') }}" class="mb-6 space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Test Name</label>
+                        <input type="text" 
+                               name="test_name" 
+                               required
+                               placeholder="Final Exam"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2" style="--tw-ring-color: #1F497D;">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Test Link (URL)</label>
+                        <input type="url" 
+                               name="test_link" 
+                               required
+                               placeholder="https://forms.google.com/..."
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2" style="--tw-ring-color: #1F497D;">
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Start Time</label>
+                            <input type="datetime-local" 
+                                   name="start_time" 
+                                   required
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2" style="--tw-ring-color: #1F497D;">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">End Time</label>
+                            <input type="datetime-local" 
+                                   name="end_time" 
+                                   required
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2" style="--tw-ring-color: #1F497D;">
+                        </div>
+                    </div>
+
+                    <button type="submit" 
+                            class="w-full text-white font-semibold py-3 rounded-lg transition hover:opacity-90" style="background-color: #1F497D;">
+                        <i class="fas fa-plus-circle mr-2"></i> Create Test
+                    </button>
+                </form>
+
+                <div class="pt-6 border-t">
+                    <h3 class="text-lg font-semibold text-gray-700 mb-3">Tests List</h3>
+                    <div class="max-h-96 overflow-y-auto border border-gray-200 rounded-lg">
+                        {% if tests %}
+                        <table class="w-full">
+                            <thead class="bg-gray-50 sticky top-0">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Test</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                    <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                                {% for test in tests %}
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-4 py-3">
+                                        <p class="text-sm font-medium text-gray-900">{{ test.test_name }}</p>
+                                        <p class="text-xs text-gray-500">{{ test.start_time | format_datetime_short }}</p>
+                                    </td>
+                                    <td class="px-4 py-3">
+                                        <span class="px-2 py-1 rounded-full text-xs font-semibold
+                                            {{ 'text-white' if test.status == 'available' 
+                                               else 'bg-yellow-100 text-yellow-800' if test.status == 'upcoming' 
+                                               else 'bg-gray-100 text-gray-800' }}" {% if test.status == 'available' %}style="background-color: #1F497D;"{% endif %}>
+                                            {{ test.status | capitalize }}
+                                        </span>
+                                    </td>
+                                    <td class="px-4 py-3 text-right">
+                                        <button onclick="editTest({{ test.id | tojson }}, {{ test.test_name | tojson }}, {{ test.test_link | tojson }}, {{ test.start_time | tojson }}, {{ test.end_time | tojson }})"
+                                                class="mr-3 transition hover:opacity-70" style="color: #1F497D;">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <form method="POST" action="{{ url_for('delete_test', id=test.id) }}" 
+                                              onsubmit="return confirm('Delete this test?')" 
+                                              class="inline">
+                                            <button type="submit" 
+                                                    class="text-red-500 hover:text-red-700 transition">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        {% else %}
+                        <div class="p-8 text-center text-gray-500">
+                            <i class="fas fa-clipboard text-4xl mb-2"></i>
+                            <p>No tests created yet</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-xl shadow-xl p-6">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">
+                <i class="fas fa-cog mr-2 text-gray-600"></i> Settings
+            </h2>
+            <div class="max-w-md">
+                <h3 class="text-lg font-semibold text-gray-700 mb-3">Change Admin Password</h3>
+                <form method="POST" action="{{ url_for('change_password') }}" class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Current Password</label>
+                        <input type="password" 
+                               name="current_password" 
+                               required
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2" style="--tw-ring-color: #1F497D;">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">New Password</label>
+                        <input type="password" 
+                               name="new_password" 
+                               required
+                               minlength="6"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2" style="--tw-ring-color: #1F497D;">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Confirm New Password</label>
+                        <input type="password" 
+                               name="confirm_password" 
+                               required
+                               minlength="6"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2" style="--tw-ring-color: #1F497D;">
+                    </div>
+                    <button type="submit" 
+                            class="text-white font-semibold px-6 py-2 rounded-lg transition hover:opacity-90" style="background-color: #1F497D;">
+                        <i class="fas fa-key mr-2"></i> Update Password
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="editModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+    <div class="bg-white rounded-xl shadow-2xl p-8 max-w-2xl w-full mx-4">
+        <div class="flex justify-between items-center mb-6">
+            <h3 class="text-2xl font-bold text-gray-800">
+                <i class="fas fa-edit mr-2" style="color: #1F497D;"></i> Edit Test
+            </h3>
+            <button onclick="closeEditModal()" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times text-2xl"></i>
+            </button>
+        </div>
+        <form method="POST" id="editForm" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Test Name</label>
+                <input type="text" 
+                       name="test_name" 
+                       id="edit_test_name"
+                       required
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2" style="--tw-ring-color: #1F497D;">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Test Link</label>
+                <input type="url" 
+                       name="test_link" 
+                       id="edit_test_link"
+                       required
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2" style="--tw-ring-color: #1F497D;">
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Start Time</label>
+                    <input type="datetime-local" 
+                           name="start_time" 
+                           id="edit_start_time"
+                           required
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2" style="--tw-ring-color: #1F497D;">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">End Time</label>
+                    <input type="datetime-local" 
+                           name="end_time" 
+                           id="edit_end_time"
+                           required
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2" style="--tw-ring-color: #1F497D;">
+                </div>
+            </div>
+            <div class="flex gap-4 pt-4">
+                <button type="submit" 
+                        class="flex-1 text-white font-semibold py-3 rounded-lg transition hover:opacity-90" style="background-color: #1F497D;">
+                    <i class="fas fa-save mr-2"></i> Save Changes
+                </button>
+                <button type="button" 
+                        onclick="closeEditModal()"
+                        class="px-6 bg-gray-300 hover:bg-gray-400 text-gray-700 font-semibold py-3 rounded-lg transition">
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function editTest(id, name, link, startTime, endTime) {
+    document.getElementById('editForm').action = `/admin/update-test/${id}`;
+    document.getElementById('edit_test_name').value = name;
+    document.getElementById('edit_test_link').value = link;
+    document.getElementById('edit_start_time').value = startTime;
+    document.getElementById('edit_end_time').value = endTime;
+    document.getElementById('editModal').classList.remove('hidden');
+}
+
+function closeEditModal() {
+    document.getElementById('editModal').classList.add('hidden');
+}
+</script>
+{% endblock %}
