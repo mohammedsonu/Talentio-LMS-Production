@@ -58,7 +58,7 @@
                              style="background-color: rgba(31, 73, 125, 0.1); border: 1px solid rgba(31, 73, 125, 0.2);"
                              data-end-time="{{ test.end_time }}">
                             <i class="fas fa-hourglass-half mr-1" style="color: #1F497D;"></i>
-                            <span class="font-semibold" style="color: #1F497D;">Calculating...</span>
+                            <span data-start-time="{{ test.start_time }}">Calculating...</span>
                         </div>
                     </div>
                     <a href="{{ test.test_link }}" 

@@ -100,9 +100,9 @@ def validate_email(email):
     return re.match(pattern, email) is not None
 
 def get_test_status(start_time, end_time):
-    now = datetime.now(timezone.utc)  # Get UTC time
-    start = datetime.fromisoformat(start_time).replace(tzinfo=timezone.utc)
-    end = datetime.fromisoformat(end_time).replace(tzinfo=timezone.utc)
+    now = datetime.now()  # Use local server time
+    start = datetime.fromisoformat(start_time)
+    end = datetime.fromisoformat(end_time)
     
     if now >= start and now <= end:
         return 'available'
@@ -111,7 +111,7 @@ def get_test_status(start_time, end_time):
     else:
         return 'ended'
     
-    
+
 
 @app.route('/')
 def index():

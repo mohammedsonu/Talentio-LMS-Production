@@ -31,6 +31,36 @@ function formatDateTime(isoString) {
     return date.toLocaleString('en-US', options);
 }
 
+// Update countdown timers
+function updateCountdowns() {
+    document.querySelectorAll('[data-start-time]').forEach(element => {
+        const startTime = element.dataset.startTime;
+        const remaining = calculateTimeRemaining(startTime);
+        
+        if (remaining) {
+            element.textContent = remaining;
+        } else {
+            // Time has passed, reload page to update status
+            location.reload();
+        }
+    });
+}
+
+// Run on page load and every minute
+document.addEventListener('DOMContentLoaded', function() {
+    updateCountdowns();
+    setInterval(updateCountdowns, 60000); // Update every minute
+    
+    const datetimeInputs = document.querySelectorAll('input[type="datetime-local"]');
+    datetimeInputs.forEach(input => {
+        if (!input.value) {
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            input.value = now.toISOString().slice(0, 16);
+        }
+    });
+});
+
 setTimeout(() => {
     document.querySelectorAll('.flash-messages > div > div').forEach(el => {
         el.style.transition = 'opacity 0.5s';
