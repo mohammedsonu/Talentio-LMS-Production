@@ -7,11 +7,14 @@ import sqlite3
 import csv
 import os
 import re
+from datetime import datetime, timezone
+import pytz
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024
+LOCAL_TZ = pytz.timezone('Asia/Kolkata')  # IST
 
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 @app.template_filter('format_datetime')
@@ -97,9 +100,9 @@ def validate_email(email):
     return re.match(pattern, email) is not None
 
 def get_test_status(start_time, end_time):
-    now = datetime.now()
-    start = datetime.fromisoformat(start_time)
-    end = datetime.fromisoformat(end_time)
+    now = datetime.now(timezone.utc)  # Get UTC time
+    start = datetime.fromisoformat(start_time).replace(tzinfo=timezone.utc)
+    end = datetime.fromisoformat(end_time).replace(tzinfo=timezone.utc)
     
     if now >= start and now <= end:
         return 'available'
@@ -107,6 +110,8 @@ def get_test_status(start_time, end_time):
         return 'upcoming'
     else:
         return 'ended'
+    
+    
 
 @app.route('/')
 def index():
