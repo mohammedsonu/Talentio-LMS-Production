@@ -14,7 +14,7 @@ app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', 'dev-secret-key-change-in-production')
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024
-LOCAL_TZ = pytz.timezone('Asia/Kolkata')  # IST
+IST = pytz.timezone('Asia/Kolkata')
 
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
 @app.template_filter('format_datetime')
@@ -100,9 +100,18 @@ def validate_email(email):
     return re.match(pattern, email) is not None
 
 def get_test_status(start_time, end_time):
-    now = datetime.now()  # Use local server time
+    # Get current time in IST
+    now = datetime.now(IST)
+    
+    # Parse stored times and localize to IST
     start = datetime.fromisoformat(start_time)
     end = datetime.fromisoformat(end_time)
+    
+    # If times don't have timezone, assume IST
+    if start.tzinfo is None:
+        start = IST.localize(start)
+    if end.tzinfo is None:
+        end = IST.localize(end)
     
     if now >= start and now <= end:
         return 'available'
