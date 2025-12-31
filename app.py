@@ -35,6 +35,8 @@ def get_db():
     conn.row_factory = sqlite3.Row
     return conn
 
+
+
 def init_db():
     conn = get_db()
     cursor = conn.cursor()
@@ -454,6 +456,10 @@ def change_password():
 def init_db_command():
     init_db()
     print('Database initialized successfully')
+
+
+init_db()
+
 
 if __name__ == '__main__':
     init_db()
